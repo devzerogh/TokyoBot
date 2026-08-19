@@ -364,7 +364,7 @@ function usr_send_message(array $data, string $method): void
         sendJsonResponse(false, "file invalid", [], 200);
     }
 
-    $tempBase = tempnam(sys_get_temp_dir(), 'mirza_');
+    $tempBase = tempnam(sys_get_temp_dir(), 'tokyo_');
     if ($tempBase === false) {
         sendJsonResponse(false, "unable to store uploaded file", [], 500);
     }

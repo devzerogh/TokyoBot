@@ -1,30 +1,30 @@
 <div align="center">
 
-# 🤖 Mirza Bot
+# 🤖 Tokyo Bot
 
 ### A powerful Telegram bot for selling VPN services — with fully automated config creation.
 
 <p>
-  <a href="https://t.me/mirzapanel">
+  <a href="https://t.me/tokyosvc">
     <img src="https://img.shields.io/badge/Telegram-Channel-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Channel"/>
   </a>
-  <a href="https://t.me/mirzapanelgroup">
+  <a href="https://t.me/tokyosvc">
     <img src="https://img.shields.io/badge/Telegram-Group-229ED9?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Group"/>
   </a>
 </p>
 
 <p>
-  <a href="https://github.com/mahdiMGF2/mirzabot/stargazers">
-    <img src="https://img.shields.io/github/stars/mahdiMGF2/mirzabot?style=flat-square&color=f5c518" alt="Stars"/>
+  <a href="https://github.com/devzerogh/tokyobot/stargazers">
+    <img src="https://img.shields.io/github/stars/devzerogh/tokyobot?style=flat-square&color=f5c518" alt="Stars"/>
   </a>
-  <a href="https://github.com/mahdiMGF2/mirzabot/network/members">
-    <img src="https://img.shields.io/github/forks/mahdiMGF2/mirzabot?style=flat-square" alt="Forks"/>
+  <a href="https://github.com/devzerogh/tokyobot/network/members">
+    <img src="https://img.shields.io/github/forks/devzerogh/tokyobot?style=flat-square" alt="Forks"/>
   </a>
-  <a href="https://github.com/mahdiMGF2/mirzabot/issues">
-    <img src="https://img.shields.io/github/issues/mahdiMGF2/mirzabot?style=flat-square" alt="Issues"/>
+  <a href="https://github.com/devzerogh/tokyobot/issues">
+    <img src="https://img.shields.io/github/issues/devzerogh/tokyobot?style=flat-square" alt="Issues"/>
   </a>
-  <a href="https://github.com/mahdiMGF2/mirzabot/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/mahdiMGF2/mirzabot?style=flat-square" alt="License"/>
+  <a href="https://github.com/devzerogh/tokyobot/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/devzerogh/tokyobot?style=flat-square" alt="License"/>
   </a>
   <img src="https://img.shields.io/badge/PHP-8.2-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP 8.2"/>
 </p>
@@ -54,17 +54,17 @@
 
 ## ✨ Overview
 
-**Mirza Bot** is a feature-rich Telegram bot for selling VPN subscriptions and automating the entire sales workflow — from purchase and payment to config creation and service management.
+**Tokyo Bot** is a feature-rich Telegram bot for selling VPN subscriptions and automating the entire sales workflow — from purchase and payment to config creation and service management.
 
 It connects directly to your panels, builds configurations automatically, accepts a wide range of payment methods, and gives both customers and admins a clean experience through a **Telegram Mini App** and a **web admin panel**.
 
-> Whether you're handing out trial accounts or running a large-scale reseller business, Mirza Bot has the tools to run it end to end.
+> Whether you're handing out trial accounts or running a large-scale reseller business, Tokyo Bot has the tools to run it end to end.
 
 ---
 
 ## 🧩 Supported Panels
 
-Mirza Bot integrates with the most popular VPN and network management panels:
+Tokyo Bot integrates with the most popular VPN and network management panels:
 
 | Panel | Panel |
 |-------|-------|
@@ -151,15 +151,15 @@ Mirza Bot integrates with the most popular VPN and network management panels:
 Run the following command on your server as **root**:
 
 ```bash
-curl -o install.sh -L https://raw.githubusercontent.com/mahdiMGF2/mirzabot/main/install.sh && bash install.sh
+curl -o install.sh -L https://raw.githubusercontent.com/devzerogh/tokyobot/main/install.sh && bash install.sh
 ```
 
 An interactive menu will appear:
 
 ```
-1) Install Mirza
-2) Update Mirza
-3) Remove Mirza
+1) Install Tokyo
+2) Update Tokyo
+3) Remove Tokyo
 4) Migrate: Free → Pro (Beta)
 5) Renew SSL certificate
 6) Help & Parameters
@@ -173,7 +173,7 @@ An interactive menu will appear:
 Run the same command and select **`2`**:
 
 ```bash
-curl -o install.sh -L https://raw.githubusercontent.com/mahdiMGF2/mirzabot/main/install.sh && bash install.sh
+curl -o install.sh -L https://raw.githubusercontent.com/devzerogh/tokyobot/main/install.sh && bash install.sh
 ```
 
 ### Remove
@@ -188,9 +188,9 @@ You can also drive the installer entirely from the command line — handy for au
 
 | Command | Description |
 |---------|-------------|
-| `install` | Install Mirza |
-| `update` | Update Mirza (choose channel / version) |
-| `remove` | Remove Mirza and its services |
+| `install` | Install Tokyo |
+| `update` | Update Tokyo (choose channel / version) |
+| `remove` | Remove Tokyo and its services |
 | `migrate` | Migrate Free → Pro |
 | `renew` | Renew the bot's SSL certificate |
 | `menu` | Open the interactive panel (default) |
@@ -213,18 +213,18 @@ You can also drive the installer entirely from the command line — handy for au
 
 ```bash
 # Auto-pick the best channel
-mirza install --channel auto
+tokyo install --channel auto
 
 # Fully non-interactive install
-mirza install --name myvpnbot --token 123:ABC \
+tokyo install --name myvpnbot --token 123:ABC \
               --admin 111 --domain bot.example.com --version 0.1.7
 
 # Update to a specific version or channel
-mirza update --version 0.1.6
-mirza update --channel release
+tokyo update --version 0.1.6
+tokyo update --channel release
 
 # Remove
-mirza remove
+tokyo remove
 ```
 
 ---
@@ -239,13 +239,13 @@ mirza remove
 | Advanced customization & analytics | — | ✅ |
 | Enhanced management & extra modules | — | ✅ |
 
-📌 **Pro purchase guide:** [View on Telegram »](https://t.me/mirzaperimium/4)
+📌 **Pro purchase guide:** [View on Telegram »](https://t.me/tokyoperimium/4)
 
 ---
 
 ## 🌍 Languages
 
-Mirza Bot ships with full translations for:
+Tokyo Bot ships with full translations for:
 
 🇬🇧 English · 🇮🇷 Persian (فارسی) · 🇷🇺 Russian (Русский) · 🇨🇳 Chinese (中文)
 
@@ -253,7 +253,7 @@ Mirza Bot ships with full translations for:
 
 ## 💵 Support the Project
 
-If **Mirza Bot** helps your business, please consider supporting its development with a crypto donation:
+If **Tokyo Bot** helps your business, please consider supporting its development with a crypto donation:
 
 <a href="https://nowpayments.io/donation/mahdi">
   <img src="https://img.shields.io/badge/Donate-NowPayments-1A1A2E?style=for-the-badge&logo=bitcoin&logoColor=white" alt="Donate"/>
@@ -265,18 +265,18 @@ Your support keeps the updates and improvements coming. Thank you! 🙌
 
 ## 👥 Contributors
 
-Thanks to everyone who has contributed to making Mirza Bot better:
+Thanks to everyone who has contributed to making Tokyo Bot better:
 
-<a href="https://github.com/mahdiMGF2/mirzabot/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=mahdiMGF2/mirzabot" alt="Contributors"/>
+<a href="https://github.com/devzerogh/tokyobot/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=devzerogh/tokyobot" alt="Contributors"/>
 </a>
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by the Mirza Panel community**
+**Made with ❤️ by the Tokyo Panel community**
 
-💬 [Channel](https://t.me/mirzapanel) · 👥 [Group](https://t.me/mirzapanelgroup) · ⭐ [Star on GitHub](https://github.com/mahdiMGF2/mirzabot)
+💬 [Channel](https://t.me/tokyosvc) · 👥 [Group](https://t.me/tokyosvc) · ⭐ [Star on GitHub](https://github.com/devzerogh/tokyobot)
 
 </div>

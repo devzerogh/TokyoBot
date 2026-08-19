@@ -5,7 +5,7 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-INSTALL_LOG="/tmp/mirza_install.log"
+INSTALL_LOG="/tmp/tokyo_install.log"
 
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
@@ -55,7 +55,7 @@ _step_eta() {
         "Configuring firewall"*)             echo 15 ;;
         "Restarting Apache"*)                echo 5  ;;
         "Setting PHP as the active"*|"Setting PHP "*) echo 6  ;;
-        "Downloading Mirza"*)                echo 20 ;;
+        "Downloading Tokyo"*)                echo 20 ;;
         "Extracting source files"*)          echo 5  ;;
         "Configuring MySQL root access"*)    echo 10 ;;
         "Opening firewall ports"*)           echo 4  ;;
@@ -167,7 +167,7 @@ _drule()  { printf "  ${C_BORDER}%s${CR}\n" "$(_repeat "━" "$UI_W")"; }
 banner()  {
     echo
     _drule
-    printf "  ${C_OK}▌${CR} ${C_TITLE}MIRZA${CR}  ${C_DIM}— VPN Subscription Management${CR}\n"
+    printf "  ${C_OK}▌${CR} ${C_TITLE}TOKYO${CR}  ${C_DIM}— VPN Subscription Management${CR}\n"
     _drule
 }
 # Menu item row: [n] label  (left-aligned, no right border)
@@ -188,8 +188,8 @@ ensure_dns() {
     echo -e "  ${C_WARN}!${CR} ${C_WARN}DNS resolution failed - configuring public DNS...${CR}"
     if [ -L "$RESOLV" ]; then
         rm -f "$RESOLV" 2>/dev/null
-    elif [ -f "$RESOLV" ] && [ ! -f "${RESOLV}.mirza.bak" ]; then
-        cp -a "$RESOLV" "${RESOLV}.mirza.bak" 2>/dev/null
+    elif [ -f "$RESOLV" ] && [ ! -f "${RESOLV}.tokyo.bak" ]; then
+        cp -a "$RESOLV" "${RESOLV}.tokyo.bak" 2>/dev/null
     fi
     { local d; for d in "${DNS_SERVERS[@]}"; do echo "nameserver $d"; done; } > "$RESOLV" 2>/dev/null
     if command -v resolvectl >/dev/null 2>&1; then
@@ -202,8 +202,8 @@ ensure_dns() {
     return 1
 }
 
-# Ensure /usr/local/bin/mirza points at the master script
-_link_mirza() {
+# Ensure /usr/local/bin/tokyo points at the master script
+_link_tokyo() {
     local master="$1" link="$2"
     chmod +x "$master" 2>/dev/null
     if [ ! -e "$link" ] || [ "$(readlink -f "$link" 2>/dev/null)" != "$(readlink -f "$master" 2>/dev/null)" ]; then
@@ -216,9 +216,9 @@ _link_mirza() {
 # install it to /root/install.sh, link it into /usr/local/bin, and re-exec.
 function self_update_script() {
     local MASTER_PATH="/root/install.sh"
-    local BIN_LINK="/usr/local/bin/mirza"
-    local URL="https://raw.githubusercontent.com/mahdiMGF2/mirzabot/main/install.sh"
-    local TEMP_FILE="/tmp/mirzabot_update.sh"
+    local BIN_LINK="/usr/local/bin/tokyo"
+    local URL="https://raw.githubusercontent.com/devzerogh/tokyobot/main/install.sh"
+    local TEMP_FILE="/tmp/tokyobot_update.sh"
 
     # Make sure DNS works before reaching GitHub
     ensure_dns >/dev/null 2>&1
@@ -247,7 +247,7 @@ function self_update_script() {
             echo -e "\e[91mCritical: cannot install the script for the first time without internet.\033[0m"
             exit 1
         fi
-        _link_mirza "$MASTER_PATH" "$BIN_LINK"
+        _link_tokyo "$MASTER_PATH" "$BIN_LINK"
         return 0
     fi
 
@@ -267,7 +267,7 @@ function self_update_script() {
         fi
         install -m 0755 "$TEMP_FILE" "$MASTER_PATH" 2>/dev/null || { mv "$TEMP_FILE" "$MASTER_PATH"; chmod +x "$MASTER_PATH"; }
         rm -f "$TEMP_FILE"
-        _link_mirza "$MASTER_PATH" "$BIN_LINK"
+        _link_tokyo "$MASTER_PATH" "$BIN_LINK"
         echo -e "\e[32mUpdated. Restarting with the latest version...\033[0m"
         sleep 1
         exec bash "$MASTER_PATH" "$@"
@@ -275,23 +275,23 @@ function self_update_script() {
 
     # Already up to date - just make sure it is linked under /usr/local/bin
     rm -f "$TEMP_FILE"
-    _link_mirza "$MASTER_PATH" "$BIN_LINK"
+    _link_tokyo "$MASTER_PATH" "$BIN_LINK"
     echo -e "\e[32mScript is up to date.\033[0m"
 }
 self_update_script "$@"
 
 # ── Repo / paths ─────────────────────────────────────────────
-BOT_DIR_DEFAULT="/var/www/html/mirzaprobotconfig"
+BOT_DIR_DEFAULT="/var/www/html/tokyoprobotconfig"
 CONFIG_FILE_DEFAULT="$BOT_DIR_DEFAULT/config.php"
-GIT_REPO="mahdiMGF2/mirzabot"
-LATEST_CACHE="/tmp/.mirza_latest_version"
-IP_CACHE="/tmp/.mirza_server_ip"
+GIT_REPO="devzerogh/tokyobot"
+LATEST_CACHE="/tmp/.tokyo_latest_version"
+IP_CACHE="/tmp/.tokyo_server_ip"
 
 # ── Resumable-install state engine ───────────────────────────
 # Survives reboots / network drops. Lets a failed install resume
 # from the last completed phase instead of starting from scratch.
-STATE_DIR="/root/confmirza"
-STATE_FILE="$STATE_DIR/.mirza_install_state"
+STATE_DIR="/root/conftokyo"
+STATE_FILE="$STATE_DIR/.tokyo_install_state"
 
 state_init() {
     mkdir -p "$STATE_DIR" 2>/dev/null
@@ -398,7 +398,7 @@ php_repo_disable() {
     local f n=0
     for f in /etc/apt/sources.list.d/*ondrej*php*.sources /etc/apt/sources.list.d/*ondrej*php*.list; do
         [ -f "$f" ] || continue
-        mv -f "$f" "$f.disabled-by-mirza" && n=$((n + 1))
+        mv -f "$f" "$f.disabled-by-tokyo" && n=$((n + 1))
     done
     [ "$n" -gt 0 ]
 }
@@ -450,17 +450,17 @@ export -f resolve_php_ver
 
 # Configure MySQL root login (all output captured by run_step's log).
 setup_mysql_root() {
-    sudo mkdir -p /root/confmirza || return 1
-    touch /root/confmirza/dbrootmirza.txt || return 1
-    sudo chmod -R 777 /root/confmirza/dbrootmirza.txt || return 1
+    sudo mkdir -p /root/conftokyo || return 1
+    touch /root/conftokyo/dbroottokyo.txt || return 1
+    sudo chmod -R 777 /root/conftokyo/dbroottokyo.txt || return 1
     local randomdbpasstxt passs userrr RANDOM_NUMBER
     randomdbpasstxt=$(openssl rand -base64 10 | tr -dc 'a-zA-Z0-9' | cut -c1-8)
     RANDOM_NUMBER=$(openssl rand -base64 12 | tr -dc 'a-zA-Z0-9' | cut -c1-12)
-    echo "\$user = 'root';"               >> /root/confmirza/dbrootmirza.txt
-    echo "\$pass = '${randomdbpasstxt}';" >> /root/confmirza/dbrootmirza.txt
-    echo "\$path = '${RANDOM_NUMBER}';"   >> /root/confmirza/dbrootmirza.txt
-    passs=$(grep '$pass' /root/confmirza/dbrootmirza.txt | cut -d"'" -f2)
-    userrr=$(grep '$user' /root/confmirza/dbrootmirza.txt | cut -d"'" -f2)
+    echo "\$user = 'root';"               >> /root/conftokyo/dbroottokyo.txt
+    echo "\$pass = '${randomdbpasstxt}';" >> /root/conftokyo/dbroottokyo.txt
+    echo "\$path = '${RANDOM_NUMBER}';"   >> /root/conftokyo/dbroottokyo.txt
+    passs=$(grep '$pass' /root/conftokyo/dbroottokyo.txt | cut -d"'" -f2)
+    userrr=$(grep '$user' /root/conftokyo/dbroottokyo.txt | cut -d"'" -f2)
     local alter_ok=0
     if sudo mysql -u "$userrr" -p"$passs" -e "alter user '$userrr'@'localhost' identified with mysql_native_password by '$passs';FLUSH PRIVILEGES;"; then
         alter_ok=1
@@ -481,7 +481,7 @@ setup_mysql_root() {
         [ -d "$d" ] && { dropin_dir="$d"; break; }
     done
     [ -n "$dropin_dir" ] || return 1
-    local dropin="$dropin_dir/zz-mirza-recovery.cnf"
+    local dropin="$dropin_dir/zz-tokyo-recovery.cnf"
     printf '[mysqld]\nskip-grant-tables\n' | sudo tee "$dropin" >/dev/null || return 1
     sudo systemctl restart mysql
     sudo mysql <<EOF
@@ -671,7 +671,7 @@ ensure_cron() {
 export -f _crontab_present _cron_unit_name _cron_daemon_active ensure_cron
 
 # Refuse to install on a server that already has conflicting software.
-# Only runs on a brand-new install (never on resume / Mirza's own partial state).
+# Only runs on a brand-new install (never on resume / Tokyo's own partial state).
 precheck_fresh_server() {
     local found=()
     _pkg_installed apache2 && found+=("apache2 (web server)")
@@ -728,7 +728,7 @@ install_pause() {
     echo -e "  ${C_DIM}This is usually caused by the server losing internet or a network error.${CR}"
     echo ""
     echo -e "  ${C_TXT}Completed steps are saved. Just run it again:${CR}"
-    echo -e "      ${C_KEY}mirza install${CR}"
+    echo -e "      ${C_KEY}tokyo install${CR}"
     echo -e "  ${C_DIM}It resumes from this step; values you already entered (domain/token/...) will not be asked again.${CR}"
     echo -e "  ${C_WARN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${CR}"
     echo ""
@@ -909,8 +909,8 @@ version_section() {
     else
         _kv "Latest" "$(_dot warn) ${C_DIM}unknown (offline)${CR}"
     fi
-    _kv "Channel" "${C_DIM}t.me/mirzapanel${CR}"
-    _kv "Group" "${C_DIM}t.me/mirzapanelgroup${CR}"
+    _kv "Channel" "${C_DIM}t.me/tokyosvc${CR}"
+    _kv "Group" "${C_DIM}t.me/tokyosvc${CR}"
 }
 
 bot_section() {
@@ -1052,7 +1052,7 @@ function renew_ssl() {
     _sec "Renew SSL certificate"
 
     # 1) Detect the bot domain: prefer config.php, then saved install state
-    local cfg="/var/www/html/mirzaprobotconfig/config.php"
+    local cfg="/var/www/html/tokyoprobotconfig/config.php"
     local domain=""
     if [ -f "$cfg" ]; then
         domain=$(grep -E "\\\$domainhosts" "$cfg" 2>/dev/null | head -1 | cut -d"'" -f2)
@@ -1069,7 +1069,7 @@ function renew_ssl() {
     _kv "Domain" "${C_KEY}${domain}${CR}"
 
     if ! command -v certbot >/dev/null 2>&1; then
-        echo -e "  ${C_BAD}●${CR} ${C_BAD}certbot is not installed. Install Mirza first.${CR}"
+        echo -e "  ${C_BAD}●${CR} ${C_BAD}certbot is not installed. Install Tokyo first.${CR}"
         sleep 1; show_menu; return 1
     fi
 
@@ -1117,9 +1117,9 @@ function backup_bot() {
     banner
     _sec "Backup Database"
 
-    CONFIG_PATH="/var/www/html/mirzaprobotconfig/config.php"
+    CONFIG_PATH="/var/www/html/tokyoprobotconfig/config.php"
     if [ ! -f "$CONFIG_PATH" ]; then
-        printf "    ${C_BAD}●${CR} ${C_BAD}Mirza is not installed. config.php not found.${CR}\n"
+        printf "    ${C_BAD}●${CR} ${C_BAD}Tokyo is not installed. config.php not found.${CR}\n"
         echo ""
         printf "  ${C_PROMPT}❯${CR} Press Enter to return to the menu... "
         read -r _
@@ -1152,7 +1152,7 @@ function backup_bot() {
 
     local backup_date
     backup_date=$(date +"%Y-%m-%d_%H-%M-%S")
-    local backup_file="/root/mirza_backup_${backup_date}.sql"
+    local backup_file="/root/tokyo_backup_${backup_date}.sql"
 
     run_step "Exporting database (${dbname})" \
         "mysqldump -h '$dbhost' -u '$dbuser' -p'$dbpass' --no-tablespaces --ssl-mode=DISABLED '$dbname' > '$backup_file'" \
@@ -1169,7 +1169,7 @@ function backup_bot() {
         send_result=$(curl -s -o /dev/null -w "%{http_code}" \
             -F "chat_id=${admin_id}" \
             -F "document=@${backup_file}" \
-            -F "caption=📦 Mirza DB Backup (${backup_date})" \
+            -F "caption=📦 Tokyo DB Backup (${backup_date})" \
             "https://api.telegram.org/bot${bot_token}/sendDocument" 2>/dev/null)
         if [ "$send_result" = "200" ]; then
             _kv "Telegram" "$(_dot ok) ${C_OK}Backup sent to admin chat (${admin_id})${CR}"
@@ -1195,9 +1195,9 @@ function import_bot() {
     banner
     _sec "Import Database"
 
-    CONFIG_PATH="/var/www/html/mirzaprobotconfig/config.php"
+    CONFIG_PATH="/var/www/html/tokyoprobotconfig/config.php"
     if [ ! -f "$CONFIG_PATH" ]; then
-        printf "    ${C_BAD}●${CR} ${C_BAD}Mirza is not installed. config.php not found.${CR}\n"
+        printf "    ${C_BAD}●${CR} ${C_BAD}Tokyo is not installed. config.php not found.${CR}\n"
         echo ""
         printf "  ${C_PROMPT}❯${CR} Press Enter to return to the menu... "
         read -r _
@@ -1235,7 +1235,7 @@ function import_bot() {
         sz=$(du -h "$f" 2>/dev/null | awk '{print $1}')
         printf "    ${C_KEY}[%d]${CR}  ${C_TXT}%s${CR}  ${C_DIM}(%s)${CR}\n" "$i" "$(basename "$f")" "$sz"
         i=$((i + 1))
-    done < <(find /root -maxdepth 1 -name 'mirza_backup_*.sql' -type f 2>/dev/null | sort -r)
+    done < <(find /root -maxdepth 1 -name 'tokyo_backup_*.sql' -type f 2>/dev/null | sort -r)
 
     if [ "${#files[@]}" -eq 0 ]; then
         printf "    ${C_WARN}!${CR} ${C_WARN}No backup files found in /root/${CR}\n"
@@ -1308,9 +1308,9 @@ function import_bot() {
 function show_menu() {
     show_logo
     _sec "Menu"
-    _mi "1" "Install Mirza"
-    _mi "2" "Update Mirza"
-    _mi "3" "Remove Mirza"
+    _mi "1" "Install Tokyo"
+    _mi "2" "Update Tokyo"
+    _mi "3" "Remove Tokyo"
     _mi "4" "Migrate: Free -> Pro (Beta)"
     _mi "5" "Renew SSL certificate"
     _mi "6" "Backup Database"
@@ -1341,9 +1341,9 @@ function show_help_screen() {
     banner
 
     _sec "Commands"
-    _kv "install" "${C_DIM}Install Mirza${CR}"
-    _kv "update" "${C_DIM}Update Mirza (choose channel / version)${CR}"
-    _kv "remove" "${C_DIM}Remove Mirza and its services${CR}"
+    _kv "install" "${C_DIM}Install Tokyo${CR}"
+    _kv "update" "${C_DIM}Update Tokyo (choose channel / version)${CR}"
+    _kv "remove" "${C_DIM}Remove Tokyo and its services${CR}"
     _kv "migrate" "${C_DIM}Migrate Free -> Pro${CR}"
     _kv "renew" "${C_DIM}Renew the bot domain SSL certificate${CR}"
     _kv "backup" "${C_DIM}Backup database & send to Telegram${CR}"
@@ -1363,14 +1363,14 @@ function show_help_screen() {
     _kv "-h, --help" "${C_DIM}Show CLI help and exit${CR}"
 
     _sec "Examples"
-    printf "    ${C_KEY}mirza install --channel auto${CR}\n"
-    printf "    ${C_KEY}mirza install --token 123:ABC \\\\${CR}\n"
+    printf "    ${C_KEY}tokyo install --channel auto${CR}\n"
+    printf "    ${C_KEY}tokyo install --token 123:ABC \\\\${CR}\n"
     printf "    ${C_DIM}            --admin 111 --domain bot.example.com --version 0.1.7${CR}\n"
-    printf "    ${C_KEY}mirza update --version 0.1.6${CR}\n"
-    printf "    ${C_KEY}mirza update --channel release${CR}\n"
-    printf "    ${C_KEY}mirza remove${CR}\n"
-    printf "    ${C_KEY}mirza backup${CR}\n"
-    printf "    ${C_KEY}mirza import${CR}\n"
+    printf "    ${C_KEY}tokyo update --version 0.1.6${CR}\n"
+    printf "    ${C_KEY}tokyo update --channel release${CR}\n"
+    printf "    ${C_KEY}tokyo remove${CR}\n"
+    printf "    ${C_KEY}tokyo backup${CR}\n"
+    printf "    ${C_KEY}tokyo import${CR}\n"
 
     echo ""
     _rule
@@ -1395,11 +1395,11 @@ function fix_update_issues() {
     local target="" fmt=""
     if [ -f "$DEB822" ]; then target="$DEB822"; fmt="deb822"
     else target="$LEGACY"; fmt="legacy"; fi
-    [ -f "$target" ] && cp "$target" "$target.mirzabackup"
+    [ -f "$target" ] && cp "$target" "$target.tokyobackup"
 
     local parked=""
     if [ "$fmt" = "deb822" ] && [ -s "$LEGACY" ]; then
-        cp "$LEGACY" "$LEGACY.mirzabackup" && : > "$LEGACY" && parked="$LEGACY"
+        cp "$LEGACY" "$LEGACY.tokyobackup" && : > "$LEGACY" && parked="$LEGACY"
     fi
 
     # arm64/armhf live on ports.ubuntu.com, not the archive mirrors.
@@ -1443,17 +1443,17 @@ EOF
         fi
         if apt-get update --allow-releaseinfo-change 2>/dev/null; then
             echo -e "\e[32mSuccessfully updated using mirror: $mirror\033[0m"
-            rm -f "$target.mirzabackup"
-            [ -n "$parked" ] && rm -f "$parked.mirzabackup"
+            rm -f "$target.tokyobackup"
+            [ -n "$parked" ] && rm -f "$parked.tokyobackup"
             return 0
         fi
     done
-    if [ -f "$target.mirzabackup" ]; then
-        mv "$target.mirzabackup" "$target"
+    if [ -f "$target.tokyobackup" ]; then
+        mv "$target.tokyobackup" "$target"
     else
         rm -f "$target"
     fi
-    [ -n "$parked" ] && [ -f "$parked.mirzabackup" ] && mv "$parked.mirzabackup" "$parked"
+    [ -n "$parked" ] && [ -f "$parked.tokyobackup" ] && mv "$parked.tokyobackup" "$parked"
     echo -e "\e[91mAll mirrors failed. Restored original apt sources\033[0m"
     return 1
 }
@@ -1596,7 +1596,7 @@ preflight() {
 }
 
 function install_bot() {
-    BOT_DIR="/var/www/html/mirzaprobotconfig"
+    BOT_DIR="/var/www/html/tokyoprobotconfig"
     PHP_VER="$(state_get PHP_VER)"
     [ -z "$PHP_VER" ] && PHP_VER="8.2"
 
@@ -1605,7 +1605,7 @@ function install_bot() {
         clear
         banner
         _sec "Install blocked"
-        printf "    ${C_BAD}●${CR} ${C_BAD}Mirza is already installed on this server.${CR}\n"
+        printf "    ${C_BAD}●${CR} ${C_BAD}Tokyo is already installed on this server.${CR}\n"
         printf "    ${C_DIM}Path:${CR} %s\n" "$BOT_DIR_DEFAULT"
         echo ""
         printf "    ${C_DIM}To upgrade, use option ${CR}${C_KEY}2 (Update)${CR}${C_DIM}.${CR}\n"
@@ -1735,9 +1735,9 @@ function install_bot() {
             || { show_step_error; install_pause "Setting PHP ${PHP_VER} as default"; }
 
         echo 'phpmyadmin phpmyadmin/dbconfig-install boolean true' | sudo debconf-set-selections
-        echo 'phpmyadmin phpmyadmin/app-password-confirm password mirzahipass' | sudo debconf-set-selections
-        echo 'phpmyadmin phpmyadmin/mysql/admin-pass password mirzahipass' | sudo debconf-set-selections
-        echo 'phpmyadmin phpmyadmin/mysql/app-pass password mirzahipass' | sudo debconf-set-selections
+        echo 'phpmyadmin phpmyadmin/app-password-confirm password tokyohipass' | sudo debconf-set-selections
+        echo 'phpmyadmin phpmyadmin/mysql/admin-pass password tokyohipass' | sudo debconf-set-selections
+        echo 'phpmyadmin phpmyadmin/mysql/app-pass password tokyohipass' | sudo debconf-set-selections
         echo 'phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2' | sudo debconf-set-selections
         run_step "Installing phpMyAdmin" \
             "DEBIAN_FRONTEND=noninteractive apt-get install -y phpmyadmin" \
@@ -1791,9 +1791,9 @@ function install_bot() {
             install_pause "Creating bot directory"
         fi
 
-        TEMP_DIR="/tmp/mirzaprobot"
+        TEMP_DIR="/tmp/tokyoprobot"
         rm -rf "$TEMP_DIR"; mkdir -p "$TEMP_DIR"
-        run_step "Downloading Mirza (${SRC_LABEL_RESUME})" "wget -O '$TEMP_DIR/bot.zip' '$ZIP_URL'" \
+        run_step "Downloading Tokyo (${SRC_LABEL_RESUME})" "wget -O '$TEMP_DIR/bot.zip' '$ZIP_URL'" \
             || { show_step_error; install_pause "Downloading bot files"; }
         run_step "Extracting source files" "unzip -o '$TEMP_DIR/bot.zip' -d '$TEMP_DIR'" \
             || { show_step_error; install_pause "Extracting bot files"; }
@@ -1821,7 +1821,7 @@ function install_bot() {
 
     # ╭──────────────────────── PHASE: DBROOT ──────────────────────╮
     if ! phase_done DBROOT; then
-        if [ ! -f "/root/confmirza/dbrootmirza.txt" ] || ! grep -q '\$pass' /root/confmirza/dbrootmirza.txt 2>/dev/null; then
+        if [ ! -f "/root/conftokyo/dbroottokyo.txt" ] || ! grep -q '\$pass' /root/conftokyo/dbroottokyo.txt 2>/dev/null; then
             run_step "Configuring MySQL root access" "setup_mysql_root" \
                 || { show_step_error; install_pause "MySQL root setup"; }
         fi
@@ -1863,7 +1863,7 @@ function install_bot() {
         state_set DOMAIN "$domainname"
     fi
     DOMAIN_NAME="$domainname"
-    PATHS=$(cat /root/confmirza/dbrootmirza.txt | grep '$path' | cut -d"'" -f2)
+    PATHS=$(cat /root/conftokyo/dbroottokyo.txt | grep '$path' | cut -d"'" -f2)
 
     # ╭──────────────────────── PHASE: SSL ─────────────────────────╮
     if ! phase_done SSL; then
@@ -2016,7 +2016,7 @@ EOF
         state_set BOTNAME "$YOUR_BOTNAME"
     fi
 
-    ROOT_PASSWORD=$(cat /root/confmirza/dbrootmirza.txt | grep '$pass' | cut -d"'" -f2)
+    ROOT_PASSWORD=$(cat /root/conftokyo/dbroottokyo.txt | grep '$pass' | cut -d"'" -f2)
     ROOT_USER="root"
     echo "SELECT 1" | mysql -u$ROOT_USER -p$ROOT_PASSWORD 2>/dev/null || {
         echo -e "\e[91mError: MySQL connection failed.\033[0m"
@@ -2032,7 +2032,7 @@ EOF
 
     randomdbpass=$(openssl rand -base64 10 | tr -dc 'a-zA-Z0-9' | cut -c1-8)
     randomdbdb=$(openssl rand -base64 10 | tr -dc 'a-zA-Z' | cut -c1-8)
-    dbname="mirzaprobot"
+    dbname="tokyoprobot"
 
     # ╭──────────────────────── PHASE: DB ──────────────────────────╮
     if ! phase_done DB; then
@@ -2091,7 +2091,7 @@ EOF
     if ! phase_done CONFIG; then
         wait
         sleep 1
-        file_path="/var/www/html/mirzaprobotconfig/config.php"
+        file_path="/var/www/html/tokyoprobotconfig/config.php"
         if [ -f "$file_path" ]; then
             rm "$file_path" || {
                 echo -e "\e[91mError: Failed to delete old config.php.\033[0m"
@@ -2104,7 +2104,7 @@ EOF
             secrettoken=$(openssl rand -base64 10 | tr -dc 'a-zA-Z0-9' | cut -c1-8)
             state_set SECRET "$secrettoken"
         fi
-        cat <<EOF > /var/www/html/mirzaprobotconfig/config.php
+        cat <<EOF > /var/www/html/tokyoprobotconfig/config.php
 <?php
 // This variable added for high load panels which their response time is long and bot can't communicate with online panel!
 // null for default settings
@@ -2125,7 +2125,7 @@ try { \$pdo = new PDO(\$dsn, \$usernamedb, \$passworddb, \$options); } catch (\P
 \$usernamebot = '${YOUR_BOTNAME}';
 ?>
 EOF
-        sudo chown www-data:www-data /var/www/html/mirzaprobotconfig/config.php 2>/dev/null
+        sudo chown www-data:www-data /var/www/html/tokyoprobotconfig/config.php 2>/dev/null
         mark_phase CONFIG
     else
         secrettoken="$(state_get SECRET)"
@@ -2140,7 +2140,7 @@ EOF
             "curl -s -F \"url=https://${YOUR_DOMAIN}/index.php\" -F \"secret_token=${secrettoken}\" \"https://api.telegram.org/bot${YOUR_BOT_TOKEN}/setWebhook\"" \
             || { show_step_error; install_pause "Setting Telegram webhook"; }
 
-        MESSAGE="✅ The Mirza bot is installed! for start the bot send /start command."
+        MESSAGE="✅ The Tokyo bot is installed! for start the bot send /start command."
         curl -s -X POST "https://api.telegram.org/bot${YOUR_BOT_TOKEN}/sendMessage" -d chat_id="${YOUR_CHAT_ID}" -d text="$MESSAGE" > /dev/null 2>&1
         sleep 3
         run_step "Starting Apache" "systemctl start apache2" \
@@ -2157,7 +2157,7 @@ EOF
     clear
     banner
     _sec "Installation complete"
-    printf "    ${C_OK}●${CR} ${C_OK}Mirza is installed and the webhook is set.${CR}\n"
+    printf "    ${C_OK}●${CR} ${C_OK}Tokyo is installed and the webhook is set.${CR}\n"
     printf "    ${C_DIM}Open Telegram and send ${CR}${C_KEY}/start${CR}${C_DIM} to your bot.${CR}\n"
 
     _sec "Access"
@@ -2171,22 +2171,22 @@ EOF
     printf "    ${C_WARN}!${CR} ${C_DIM}Save these credentials somewhere safe.${CR}\n"
 
     _sec "Manage"
-    _kv "Command" "${C_DIM}run ${CR}${C_KEY}mirza${CR}${C_DIM} anytime to open this panel${CR}"
+    _kv "Command" "${C_DIM}run ${CR}${C_KEY}tokyo${CR}${C_DIM} anytime to open this panel${CR}"
     echo ""
     _rule
     echo ""
 
     chmod +x /root/install.sh
-    ln -sf /root/install.sh /usr/local/bin/mirza
+    ln -sf /root/install.sh /usr/local/bin/tokyo
     self_update_script
 }
 function update_bot() {
     clear
     banner
-    BOT_DIR="/var/www/html/mirzaprobotconfig"
+    BOT_DIR="/var/www/html/tokyoprobotconfig"
     if [ ! -d "$BOT_DIR" ]; then
         _sec "Update"
-        printf "    ${C_BAD}●${CR} ${C_BAD}Mirza is not installed. Install it first.${CR}\n"
+        printf "    ${C_BAD}●${CR} ${C_BAD}Tokyo is not installed. Install it first.${CR}\n"
         sleep 2
         show_menu
         return 1
@@ -2209,13 +2209,13 @@ function update_bot() {
 
     echo ""
     echo -e "  ${C_DIM}Update target:${CR} ${C_KEY}${TARGET_LABEL}${CR}"
-    print_header "Updating Mirza Bot"
+    print_header "Updating Tokyo Bot"
     run_step "Updating system packages" "apt update --allow-releaseinfo-change && apt upgrade -y" \
         || { show_step_error; echo -e "\e[91mError updating the server. Exiting...\033[0m"; exit 1; }
     run_step "Ensuring cron is installed and running" "ensure_cron" \
         || { show_step_error; echo -e "\e[91mError: Failed to install or start cron.\033[0m"; exit 1; }
     echo -e "\e[92mServer packages updated successfully...\033[0m\n"
-    TEMP_DIR="/tmp/mirzaprobot_update"
+    TEMP_DIR="/tmp/tokyoprobot_update"
     rm -rf "$TEMP_DIR"; mkdir -p "$TEMP_DIR"
     run_step "Downloading ${TARGET_LABEL}" "wget -q -O '$TEMP_DIR/bot.zip' '$ZIP_URL'" \
         || { show_step_error; echo -e "\e[91mError: Failed to download update package.\033[0m"; exit 1; }
@@ -2234,7 +2234,7 @@ function update_bot() {
              echo -e "\e[91mError: Failed to install PHP dependencies. The update was aborted and your current installation was left untouched.\033[0m"
              rm -rf "$TEMP_DIR"; sleep 2; show_menu; return 1; }
     CONFIG_PATH="$BOT_DIR/config.php"
-    TEMP_CONFIG="/root/mirzapro_config_backup.php"
+    TEMP_CONFIG="/root/tokyopro_config_backup.php"
     if [ -f "$CONFIG_PATH" ]; then
         cp "$CONFIG_PATH" "$TEMP_CONFIG" || {
             echo -e "\e[91mConfig file backup failed!\033[0m"
@@ -2345,32 +2345,32 @@ EOF
         fi
     fi
     rm -rf "$TEMP_DIR"
-    echo -e "\n\e[92mMirza Bot updated to latest version successfully!\033[0m"
+    echo -e "\n\e[92mTokyo Bot updated to latest version successfully!\033[0m"
     if [ -f "/root/install.sh" ]; then
         sudo chmod +x /root/install.sh
-        sudo ln -sf /root/install.sh /usr/local/bin/mirza
-        echo -e "\e[92mEnsured /root/install.sh is executable and 'mirza' command is linked.\033[0m"
+        sudo ln -sf /root/install.sh /usr/local/bin/tokyo
+        echo -e "\e[92mEnsured /root/install.sh is executable and 'tokyo' command is linked.\033[0m"
     else
         echo -e "\e[91mError: /root/install.sh not found after update attempt.\033[0m"
     fi
 }
 function remove_bot() {
-    echo -e "\e[33mStarting Mirza Bot removal process...\033[0m"
+    echo -e "\e[33mStarting Tokyo Bot removal process...\033[0m"
     LOG_FILE="/var/log/remove_bot.log"
     echo "Log file: $LOG_FILE" > "$LOG_FILE"
-    BOT_DIR="/var/www/html/mirzaprobotconfig"
+    BOT_DIR="/var/www/html/tokyoprobotconfig"
     if [ ! -d "$BOT_DIR" ]; then
-        echo -e "\e[31m[ERROR]\033[0m Mirza Bot is not installed (/var/www/html/mirzaprobotconfig not found)." | tee -a "$LOG_FILE"
+        echo -e "\e[31m[ERROR]\033[0m Tokyo Bot is not installed (/var/www/html/tokyoprobotconfig not found)." | tee -a "$LOG_FILE"
         echo -e "\e[33mNothing to remove. Exiting...\033[0m" | tee -a "$LOG_FILE"
         sleep 2
         exit 1
     fi
-    read -p "Are you sure you want to remove Mirza Bot and its dependencies? (y/n): " choice
+    read -p "Are you sure you want to remove Tokyo Bot and its dependencies? (y/n): " choice
     if [[ ! "$choice" =~ ^[Yy]$ ]]; then
         echo "Aborting..." | tee -a "$LOG_FILE"
         exit 0
     fi
-    echo "Removing Mirza Bot..." | tee -a "$LOG_FILE"
+    echo "Removing Tokyo Bot..." | tee -a "$LOG_FILE"
     if command -v crontab >/dev/null 2>&1 || [ -x /usr/bin/crontab ]; then
         local _cb
         _cb="$(command -v crontab || echo /usr/bin/crontab)"
@@ -2378,9 +2378,9 @@ function remove_bot() {
             "$_cb" -u www-data -l 2>/dev/null | grep -v '/cronbot/' | "$_cb" -u www-data - 2>/dev/null || true
         fi
         "$_cb" -l 2>/dev/null | grep -v '/cronbot/' | "$_cb" - 2>/dev/null || true
-        echo -e "\e[92mRemoved Mirza cron jobs.\033[0m" | tee -a "$LOG_FILE"
+        echo -e "\e[92mRemoved Tokyo cron jobs.\033[0m" | tee -a "$LOG_FILE"
     fi
-    CONFIG_PATH="/var/www/html/mirzaprobotconfig/config.php"
+    CONFIG_PATH="/var/www/html/tokyoprobotconfig/config.php"
     if [ -f "$CONFIG_PATH" ]; then
         sudo shred -u -n 5 "$CONFIG_PATH" && echo -e "\e[92mConfig file securely removed: $CONFIG_PATH\033[0m" | tee -a "$LOG_FILE" || {
             echo -e "\e[91mFailed to securely remove config file: $CONFIG_PATH\033[0m" | tee -a "$LOG_FILE"
@@ -2438,9 +2438,9 @@ function remove_bot() {
     echo -e "\e[33mResetting firewall rules (except SSL)...\033[0m" | tee -a "$LOG_FILE"
     sudo ufw delete allow 'Apache' 2>/dev/null
     sudo ufw reload 2>/dev/null
-    # Clear Mirza install state so a fresh install is allowed afterwards
-    sudo rm -rf /root/confmirza
-    echo -e "\e[92mMirza Bot, MySQL, and their dependencies have been completely removed.\033[0m" | tee -a "$LOG_FILE"
+    # Clear Tokyo install state so a fresh install is allowed afterwards
+    sudo rm -rf /root/conftokyo
+    echo -e "\e[92mTokyo Bot, MySQL, and their dependencies have been completely removed.\033[0m" | tee -a "$LOG_FILE"
 }
 
 function migrate_to_pro() {
@@ -2450,7 +2450,7 @@ function migrate_to_pro() {
         echo -e "  ${C_BAD}●${CR} ${C_BAD}No internet connection (even after DNS reset). Aborting.${CR}"
         sleep 2; show_menu; return 1
     fi
-    OLD_BOT_DIR="/var/www/html/mirzabotconfig"
+    OLD_BOT_DIR="/var/www/html/tokyobotconfig"
     if [ ! -d "$OLD_BOT_DIR" ]; then
         echo -e "\033[31m[ERROR] Free version source code not found in $OLD_BOT_DIR.\033[0m"
         echo -e "\033[33mMake sure the free version is installed.\033[0m"
@@ -2475,10 +2475,10 @@ function migrate_to_pro() {
         echo -e "\033[31mPlease create a backup first!\033[0m"
         exit 1
     fi
-    BACKUP_FILE="/root/mirzabot_backup.sql"
+    BACKUP_FILE="/root/tokyobot_backup.sql"
     if [ ! -f "$BACKUP_FILE" ]; then
         echo -e "\033[31m[ERROR] Backup file not found at $BACKUP_FILE\033[0m"
-        echo -e "\033[33mPlease run the 'mirza' command (Free Version Script) and use option 4 to create a backup.\033[0m"
+        echo -e "\033[33mPlease run the 'tokyo' command (Free Version Script) and use option 4 to create a backup.\033[0m"
         exit 1
     else
         echo -e "\033[32mBackup file found.\033[0m"
@@ -2486,10 +2486,10 @@ function migrate_to_pro() {
     echo ""
     echo -e "\033[43;30m[WARNING] Additional Bots Notice\033[0m"
     echo -e "\033[33mThis migration process will reconfigure Apache for the Pro version.\033[0m"
-    echo -e "\033[33mOnly the main bot (mirzabotconfig) will be migrated.\033[0m"
+    echo -e "\033[33mOnly the main bot (tokyobotconfig) will be migrated.\033[0m"
     echo -e "\033[33mExisting Additional Bots in /var/www/html/ might stop working.\033[0m"
     echo -e "\033[36mFound directories:\033[0m"
-    ls -d /var/www/html/*/ 2>/dev/null | grep -v "mirzabotconfig"
+    ls -d /var/www/html/*/ 2>/dev/null | grep -v "tokyobotconfig"
     echo ""
     read -p "Do you understand and want to proceed? (y/n): " confirm_add
     if [[ "$confirm_add" != "y" && "$confirm_add" != "Y" ]]; then
@@ -2497,7 +2497,7 @@ function migrate_to_pro() {
         exit 0
     fi
     echo -e "\n\033[36mChecking Database Credentials...\033[0m"
-    ROOT_CRED_FILE="/root/confmirza/dbrootmirza.txt"
+    ROOT_CRED_FILE="/root/conftokyo/dbroottokyo.txt"
     ROOT_PASS=""
     ROOT_USER="root"
     if [ -f "$ROOT_CRED_FILE" ]; then
@@ -2521,8 +2521,8 @@ function migrate_to_pro() {
         MYSQL_AUTH_PLUGIN="caching_sha2_password"
     fi
     echo -e "\033[32mDatabase connection successful.\033[0m"
-    OLD_DB="mirzabot"
-    NEW_DB="mirzaprobot"
+    OLD_DB="tokyobot"
+    NEW_DB="tokyoprobot"
     if ! mysql -u "$ROOT_USER" -p"$ROOT_PASS" -e "USE $OLD_DB;" &>/dev/null; then
         echo -e "\033[31m[ERROR] Database '$OLD_DB' not found!\033[0m"
         exit 1
@@ -2541,7 +2541,7 @@ function migrate_to_pro() {
     done
     mysql -u "$ROOT_USER" -p"$ROOT_PASS" -e "DROP DATABASE IF EXISTS $OLD_DB;"
     echo -e "\033[32mDatabase migrated successfully.\033[0m"
-    OLD_CONFIG="/var/www/html/mirzabotconfig/config.php"
+    OLD_CONFIG="/var/www/html/tokyobotconfig/config.php"
     OLD_DB_USER=$(grep '$usernamedb' "$OLD_CONFIG" | cut -d"'" -f2)
     if [ -n "$OLD_DB_USER" ]; then
         echo -e "\033[33mRemoving old database user ($OLD_DB_USER)...\033[0m"
@@ -2563,14 +2563,14 @@ function migrate_to_pro() {
     OLD_DOMAIN_FULL=$(grep '$domainhosts' "$OLD_CONFIG" | cut -d"'" -f2)
     DOMAIN_NAME=$(echo "$OLD_DOMAIN_FULL" | cut -d'/' -f1)
     echo -e "\033[32mDomain detected: $DOMAIN_NAME\033[0m"
-    NEW_BOT_DIR="/var/www/html/mirzaprobotconfig"
+    NEW_BOT_DIR="/var/www/html/tokyoprobotconfig"
     rm -rf "$OLD_BOT_DIR"
     mkdir -p "$NEW_BOT_DIR"
-    ZIP_URL="https://github.com/mahdiMGF2/mirzabot/archive/refs/heads/main.zip"
-    TEMP_DIR="/tmp/mirzabot_mig"
+    ZIP_URL="https://github.com/devzerogh/tokyobot/archive/refs/heads/main.zip"
+    TEMP_DIR="/tmp/tokyobot_mig"
     mkdir -p "$TEMP_DIR"
-    run_step "Downloading Mirza source" "wget -q -O '$TEMP_DIR/bot.zip' '$ZIP_URL'" \
-        || { show_step_error; echo -e "\033[31mError: Failed to download Mirza source.\033[0m"; exit 1; }
+    run_step "Downloading Tokyo source" "wget -q -O '$TEMP_DIR/bot.zip' '$ZIP_URL'" \
+        || { show_step_error; echo -e "\033[31mError: Failed to download Tokyo source.\033[0m"; exit 1; }
     run_step "Extracting source files" "unzip -o -q '$TEMP_DIR/bot.zip' -d '$TEMP_DIR'" \
         || { show_step_error; echo -e "\033[31mError: Failed to extract source files.\033[0m"; exit 1; }
     EXTRACTED_DIR=$(find "$TEMP_DIR" -mindepth 1 -maxdepth 1 -type d | head -1)
@@ -2658,8 +2658,8 @@ EOF
     ensure_cron || echo -e "\033[33mWarning: cron is not installed or not running.\033[0m"
     sed -i 's/\r$//' /root/install.sh
     chmod +x /root/install.sh
-    rm -f /usr/local/bin/mirza
-    ln -sf /root/install.sh /usr/local/bin/mirza
+    rm -f /usr/local/bin/tokyo
+    ln -sf /root/install.sh /usr/local/bin/tokyo
     clear
     echo -e "\033[32m====================================================\033[0m"
     echo -e "\033[32m       MIGRATION SUCCESSFUL (Free -> Pro)           \033[0m"
@@ -2668,7 +2668,7 @@ EOF
     echo -e "\033[36mNew User:\033[0m     $NEW_DB_USER"
     echo -e "\033[36mNew Pass:\033[0m     $NEW_DB_PASS"
     echo -e "\033[36mBot Domain:\033[0m   https://$DOMAIN_NAME"
-    echo -e "\033[33mUse command 'mirza' to manage the bot from now on.\033[0m"
+    echo -e "\033[33mUse command 'tokyo' to manage the bot from now on.\033[0m"
     echo ""
 }
 
@@ -2680,15 +2680,15 @@ ARG_DBUSER=""   ARG_DBPASS=""  ARG_VERSION=""  ARG_CHANNEL=""
 print_usage() {
     cat <<USAGE
 
-  Mirza - management script
+  Tokyo - management script
 
   Usage:
-    mirza [command] [options]
+    tokyo [command] [options]
 
   Commands:
-    install            Install Mirza
-    update             Update Mirza
-    remove             Remove Mirza
+    install            Install Tokyo
+    update             Update Tokyo
+    remove             Remove Tokyo
     migrate            Migrate Free -> Pro
     renew              Renew the bot domain SSL certificate
     backup             Backup database & send to Telegram
@@ -2706,10 +2706,10 @@ print_usage() {
     -h, --help         Show this help and exit
 
   Examples:
-    mirza install --channel auto
-    mirza install --token 123:ABC --admin 111 --domain bot.example.com --version 0.1.7
-    mirza update --channel release
-    mirza update --version 0.1.6
+    tokyo install --channel auto
+    tokyo install --token 123:ABC --admin 111 --domain bot.example.com --version 0.1.7
+    tokyo update --channel release
+    tokyo update --version 0.1.6
 
 USAGE
 }
